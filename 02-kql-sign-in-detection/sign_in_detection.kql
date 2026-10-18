@@ -1,0 +1,43 @@
+// Query 1: Review recent failed sign-ins.
+// In Microsoft Entra SigninLogs, ResultType == "0" generally indicates success.
+SigninLogs
+| where TimeGenerated >= ago(24h)
+| where ResultType != "0"
+| project TimeGenerated, UserPrincipalName, IPAddress, ResultType, AppDisplayName
+| order by TimeGenerated desc
+
+// Query 2: Summarize repeated failures by user, source IP, and 15-minute window.
+// Tune the threshold to the environment's baseline.
+SigninLogs
+| where TimeGenerated >= ago(24h)
+| where ResultType != "0"
+| summarize
+    FailedAttempts = count(),
+    FirstSeen = min(TimeGenerated),
+    LastSeen = max(TimeGenerated),
+    Applications = make_set(AppDisplayName, 10)
+    by UserPrincipalName, IPAddress, bin(TimeGenerated, 15m)
+| where FailedAttempts >= 5
+| order by FailedAttempts desc
+
+// Query 3: Find accounts with failed sign-ins and a later successful sign-in
+// from the same IP within the review period.
+let FailedSignIns =
+    SigninLogs
+    | where TimeGenerated >= ago(24h)
+    | where ResultType != "0"
+    | summarize
+        FailedAttempts = count(),
+        LastFailure = max(TimeGenerated)
+        by UserPrincipalName, IPAddress;
+let SuccessfulSignIns =
+    SigninLogs
+    | where TimeGenerated >= ago(24h)
+    | where ResultType == "0"
+    | summarize LastSuccess = max(TimeGenerated)
+        by UserPrincipalName, IPAddress;
+FailedSignIns
+| join kind=inner SuccessfulSignIns on UserPrincipalName, IPAddress
+| where LastSuccess > LastFailure
+| project UserPrincipalName, IPAddress, FailedAttempts, LastFailure, LastSuccess
+| order by FailedAttempts desc
