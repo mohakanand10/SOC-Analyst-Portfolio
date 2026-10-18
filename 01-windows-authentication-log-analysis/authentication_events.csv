@@ -1,0 +1,8 @@
+timestamp_utc,hostname,event_id,account,source_ip,logon_type,result
+2026-10-15T09:01:10Z,LAB-WIN01,4625,m.anand.test,198.51.100.24,3,Failure
+2026-10-15T09:01:18Z,LAB-WIN01,4625,m.anand.test,198.51.100.24,3,Failure
+2026-10-15T09:01:26Z,LAB-WIN01,4625,m.anand.test,198.51.100.24,3,Failure
+2026-10-15T09:02:02Z,LAB-WIN01,4625,m.anand.test,198.51.100.24,3,Failure
+2026-10-15T09:03:11Z,LAB-WIN01,4624,m.anand.test,198.51.100.24,3,Success
+2026-10-15T09:07:30Z,LAB-WIN01,4624,service.demo,192.0.2.45,5,Success
+2026-10-15T09:09:05Z,LAB-WIN01,4625,guest.demo,203.0.113.17,3,Failure
